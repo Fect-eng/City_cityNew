@@ -1,0 +1,523 @@
+package com.sistemas.ciudadnuevasegura.GPS;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
+import com.sistemas.ciudadnuevasegura.R;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Polygon;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+
+import java.util.ArrayList;
+
+public class ValidarGPS_Activity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
+
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final int REQUEST_CHECK_GPS_SETTINGS = 2;
+    private static final long GPS_CHECK_INTERVAL = 10000; // 10 segundos
+
+    private boolean gpsEnabled = false;
+    private AlertDialog enableGpsDialog; // Agregar esta línea
+    private boolean permissionsRequested = false;
+    private Handler gpsCheckHandler;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+    private boolean isRunning = false;
+    private Handler handler;
+    EditText EditTextLatitud;
+    EditText EditTextLongitud;
+
+    private Button Asegurar_GPS_BTN;
+    private static final String PREF_NAME = "MyPreferences";
+    private static final String KEY_ACTION_DONE = "actionDone";
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    /**
+     *
+     */
+    private MapView mapView;
+    private MyLocationNewOverlay myLocationOverlay;
+    private ArrayList<GeoPoint> polygonVertices;
+
+    Toolbar toolbar;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_validar_gps);
+
+        EditTextLatitud = findViewById(R.id.EditTextLatitud);
+        EditTextLongitud = findViewById(R.id.EditTextLongitud);
+        Asegurar_GPS_BTN = findViewById(R.id.Asegurar_GPS_BTN);
+
+        handler = new Handler();
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setBackgroundColor(Color.parseColor("#0A708A")); //Color de Toolbar diferente
+        toolbar.setTitleTextColor(Color.parseColor("#FFFFFF")); //Color de Texto Blanco
+        getSupportActionBar().setTitle("Validacion GPS");
+
+
+        /**
+         * Inicio COdigo GPS
+         */
+        //MetodoCalibrar();
+        // Inicializar el cliente de ubicación fusionada
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Crear solicitud de ubicación
+
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(1000); // Actualizar la ubicación cada segundo
+        locationRequest.setFastestInterval(1000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // Crear el callback de ubicación
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    // Obtener la latitud y longitud actual
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+
+                    // Actualizar los TextViews con la latitud y longitud
+                    EditTextLatitud.setText(String.valueOf(latitude));
+                    EditTextLongitud.setText(String.valueOf(longitude));
+                }
+            }
+        };
+
+        checkAndRequestLocationPermission();
+        //checkLoginButtonState();
+        /**
+         *  FInal Codigo GPS
+         */
+
+        // Inicializa osmdroid
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE));
+
+        // Inicializa el MapView
+        mapView = findViewById(R.id.mapView);
+        mapView.setMultiTouchControls(true);
+
+        // Define los vértices del polígono que representa la región
+        polygonVertices = new ArrayList<>();
+        /**
+         *   GeoPoint point1 = new GeoPoint(-17.986669, -70.253245);
+         *         GeoPoint point2 = new GeoPoint(-18.000200, -70.253352);
+         *         GeoPoint point3 = new GeoPoint(-18.000894, -70.226745);
+         *         GeoPoint point4 = new GeoPoint(-17.985547, -70.227646);
+         *         GeoPoint point5 = new GeoPoint(-17.984404, -70.253095);
+         */
+        // Lugar donde vives Tacna --- Luther King 1046
+        /**
+         *
+         */
+        GeoPoint point1 = new GeoPoint(-17.980008, -70.244644);
+        GeoPoint point2 = new GeoPoint(-17.989560, -70.237820);
+        GeoPoint point3 = new GeoPoint(-17.978865, -70.223958);
+        GeoPoint point4 = new GeoPoint(-17.971191, -70.230224);
+        GeoPoint point5 = new GeoPoint(-17.980131, -70.244644);
+
+        polygonVertices.add(point1);
+        polygonVertices.add(point2);
+        polygonVertices.add(point3);
+        polygonVertices.add(point4);
+        polygonVertices.add(point5);
+
+        // Agrega un polígono que representa la región
+        Polygon regionPolygon = new Polygon(mapView);
+        regionPolygon.setFillColor(0x300000FF); // Relleno azul transparente
+        regionPolygon.setStrokeColor(0xFF0000FF); // Borde azul
+        regionPolygon.setStrokeWidth(2);
+        regionPolygon.setPoints(polygonVertices);
+        mapView.getOverlayManager().add(regionPolygon);
+
+        // Establece el centro del mapa en la región
+        mapView.getController().setCenter(polygonVertices.get(0));
+        mapView.getController().setZoom(15); // Ajusta el nivel de zoom según loque requieres
+
+        // Configura la capa de ubicación actual
+        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), mapView);
+        myLocationOverlay.enableMyLocation();
+        myLocationOverlay.runOnFirstFix(() -> {
+            runOnUiThread(() -> {
+                mapView.getController().animateTo(myLocationOverlay.getMyLocation());
+
+                // Verificar si la ubicación del usuario está dentro del polígono
+                if (isLocationInsideRegion()) {
+                    showToast("Dentro del polígono");
+                    startActivity(new Intent(ValidarGPS_Activity.this, BotonPanic_Activity.class));
+                    finish();
+                } else {
+                    showToast("Fuera del polígono");
+                    // Redirige a otro activity
+
+                    // Redirige a otro activity de manera instantánea
+                  startActivity(new Intent(ValidarGPS_Activity.this, NosePuede_Activity.class));
+                    // finish(); // Cierra esta actividad si es necesario
+                }
+            });
+        });
+        mapView.getOverlayManager().add(myLocationOverlay);
+
+/**
+ * =================================================================================================
+ * =================================================================================================
+ */
+        Asegurar_GPS_BTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(ValidarGPS_Activity.this, ValidarGPS_Activity.class));
+                //finish();
+            }
+        });
+/**
+ * =================================================================================================
+ * =================================================================================================
+ */
+
+    }
+
+    private boolean esAccionRealizada() {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(KEY_ACTION_DONE, false);
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startLocationUpdates();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }
+
+    private void startLocationUpdates() {
+        // Verificar permisos de ubicación
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            return;
+        }
+
+        // Iniciar las actualizaciones de ubicación
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+    }
+
+    private void stopLocationUpdates() {
+        // Detener las actualizaciones de ubicación
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    /**
+     *  @Override
+     *     public void onRequestPermissionsResult(int requestCode, @android.support.annotation.NonNull String[] permissions, @android.support.annotation.NonNull int[] grantResults) {
+     *         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+     *         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+     *             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+     *                 startLocationUpdates();
+     *             } else {
+     *                 Toast.makeText(this, "Se requieren permisos de ubicación para mostrar la ubicación en tiempo real", Toast.LENGTH_SHORT).show();
+     *             }
+     *         }
+     *     }
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @androidx.annotation.NonNull String[] permissions, @androidx.annotation.NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+            } else {
+                Toast.makeText(this, "Se requieren permisos de ubicación para mostrar la ubicación en tiempo real", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    /**
+     *
+     @Override
+     public void onRequestPermissionsResult(int requestCode, @androidx.annotation.NonNull String[] permissions, @NonNull int[] grantResults) {
+     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+     if (requestCode == PERMISSION_REQUEST_ACCESS_FINE_LOCATION) {
+     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+     // Permiso concedido, realizar las acciones relacionadas con la ubicación
+     startLocation();
+     } else {
+     // Permiso denegado, mostrar mensaje al usuario o realizar otra acción
+     Toast.makeText(this, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show();
+     }
+     }
+     }
+     */
+
+
+    private void checkAndRequestLocationPermission() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager != null && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            // El GPS está activado
+            gpsEnabled = true;
+            showGpsActivatedMessage();
+           // enableLoginButton();
+        } else {
+            // El GPS está desactivado, mostrar diálogo para solicitar activación
+            showEnableGPSDialog();
+        }
+
+        if (!permissionsRequested) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Permiso no concedido, solicitar permiso
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
+                permissionsRequested = true;
+            } else {
+                // Permiso concedido, realizar las acciones relacionadas con la ubicación
+                startLocation();
+            }
+        }
+    }
+
+    private void startLocation() {
+        if (gpsEnabled) {
+            // Realizar acciones relacionadas con la ubicación aquí
+        }
+    }
+
+    private void showEnableGPSDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Activar GPS");
+        builder.setMessage("Para utilizar esta aplicación, debes activar el GPS.");
+        builder.setPositiveButton("Activar GPS", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                requestGpsActivation();
+                dialog.dismiss(); // Cerrar el diálogo
+            }
+        });
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                showEnableGPSDialog(); // Vuelve a mostrar el diálogo si se cancela
+            }
+        });
+        builder.setCancelable(false);
+        enableGpsDialog = builder.show(); // Asignar la instancia del diálogo a la variable enableGpsDialog
+    }
+
+    private void requestGpsActivation() {
+        LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
+        task.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+            @Override
+            public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+                try {
+                    LocationSettingsResponse response = task.getResult(ApiException.class);
+                    // El GPS está activado
+                    gpsEnabled = true;
+                    showGpsActivatedMessage();
+                   // enableLoginButton();
+                } catch (ApiException exception) {
+                    switch (exception.getStatusCode()) {
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                // El GPS está desactivado, pero se puede solucionar mostrando el diálogo de activación
+                                ResolvableApiException resolvable = (ResolvableApiException) exception;
+                                resolvable.startResolutionForResult(ValidarGPS_Activity.this, REQUEST_CHECK_GPS_SETTINGS);
+                                showGpsActivationDialog();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            // El dispositivo no admite cambios en la configuración del GPS
+                            break;
+                    }
+                }
+            }
+        });
+    }
+
+    private void showGpsActivationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Activar GPS");
+        builder.setMessage("El GPS está desactivado. ¿Deseas activarlo?");
+        builder.setPositiveButton("Activar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                requestGpsActivation();
+                dialog.dismiss(); // Cerrar el diálogo
+            }
+        });
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                showEnableGPSDialog(); // Vuelve a mostrar el diálogo de activación si se cancela
+            }
+        });
+        builder.setCancelable(false);
+        enableGpsDialog = builder.show(); // Asignar la instancia del diálogo a la variable enableGpsDialog
+    }
+
+    private Runnable gpsCheckRunnable = new Runnable() {
+        @Override
+        public void run() {
+            checkAndRequestLocationPermission();
+            gpsCheckHandler.postDelayed(this, GPS_CHECK_INTERVAL);
+        }
+    };
+
+    // // TODO: 30/10/2023
+
+    /**
+     *  @Override
+     *     protected void onDestroy() {
+     *         super.onDestroy();
+     *         gpsCheckHandler.removeCallbacks(gpsCheckRunnable);
+     *
+     *         isRunning = false;
+     *         handler.removeCallbacksAndMessages(null);
+     *     }
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (gpsCheckHandler != null) {
+            gpsCheckHandler.removeCallbacks(gpsCheckRunnable);
+        }
+
+        isRunning = false;
+
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+    }
+
+
+
+    private void showGpsActivatedMessage() {
+        Toast.makeText(this, "GPS Activado", Toast.LENGTH_SHORT).show();
+    }
+
+    private void Metodo_de_Imagen() {
+        Toast.makeText(this, "Prueba de Imagen", Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean isLocationInsideRegion() {
+        // Implementa la lógica para verificar si la ubicación del usuario está dentro del polígono
+        // Puedes utilizar la misma lógica que mencioné anteriormente
+
+        // Ejemplo de implementación (sustitúyelo con la lógica real)
+        if (myLocationOverlay != null) {
+            GeoPoint userLocation = myLocationOverlay.getMyLocation();
+            if (userLocation != null) {
+                return isPointInsidePolygon(userLocation, polygonVertices);
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isPointInsidePolygon(GeoPoint point, ArrayList<GeoPoint> polygonVertices) {
+        // Implementa la lógica para verificar si un punto está dentro del polígono
+        // Puedes usar la fórmula de punto dentro de un polígono
+
+        // Ejemplo de implementación (sustitúyelo con la lógica real)
+        int intersectCount = 0;
+        double x1, x2, y1, y2;
+
+        for (int i = 0; i < polygonVertices.size() - 1; i++) {
+            x1 = polygonVertices.get(i).getLongitude();
+            y1 = polygonVertices.get(i).getLatitude();
+            x2 = polygonVertices.get(i + 1).getLongitude();
+            y2 = polygonVertices.get(i + 1).getLatitude();
+
+            if ((y1 > point.getLatitude()) != (y2 > point.getLatitude()) &&
+                    (point.getLongitude() < (x2 - x1) * (point.getLatitude() - y1) / (y2 - y1) + x1)) {
+                intersectCount++;
+            }
+        }
+
+        return intersectCount % 2 != 0;
+    }
+
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return false;
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
+    }
+}

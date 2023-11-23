@@ -1,0 +1,39 @@
+<?php
+$server = "localhost";
+$username = "root";
+$password = "";
+$database = "track_wenco";
+$conn = mysqli_connect($server, $username, $password, $database);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_errno());
+} else {
+    //echo "COnexion Exitosa!";
+}
+?>
+
+applicacionnueva901@gmail.com  	== ID
+applicacionnueva901$%		    == Contraseña
+
+Contraseña de Aplicacion === no Olvidarse
+@FasteryMomentun1234
+
+
+https://manage.banahosting.com/clientarea.php
+mdcn.sgtic@gmail.com MdcN2026++
+
+android:visibility="gone"
+
+/**
+ * =================================================================================================
+ * =================================================================================================
+ */
+
+ git init
+ git init add -A
+ git status
+ git commit -m "version 1"
+ git remote add origin https://github.com/Fect-eng/web_geoApp.git
+ git push origin master
+
+
+ new update

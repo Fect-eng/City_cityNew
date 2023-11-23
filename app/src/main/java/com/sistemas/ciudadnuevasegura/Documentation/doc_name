@@ -1,0 +1,14 @@
+<?php
+include 'conn.php';
+$codigo=$_GET['usuarios_wenco'];
+
+$consulta = "select * from user_login where usuarios_wenco = '$codigo'";
+$resultado = $conn -> query($consulta);
+
+while($fila=$resultado -> fetch_array()){
+    $producto[] = array_map('utf8_encode', $fila);
+}
+
+echo json_encode($producto);
+$resultado -> close();
+?>

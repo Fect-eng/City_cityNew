@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Pruebas.Ubicacion_Activity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="600dp"
+            tools:ignore="MissingConstraints">
+
+            <LinearLayout
+                android:layout_width="280dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:textAlignment="center"
+                    android:textColor="#000000"
+                    android:text="Posicion Actual"/>
+
+
+                <EditText
+                    android:id="@+id/EditTextLatitud"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#E15E5E"
+                    android:textColor="#FFFFFF"
+                    android:hint="Posicion Norte - Latitud" />
+
+                <EditText
+                    android:id="@+id/EditTextLongitud"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#55E435"
+                    android:textColor="#FFFFFF"
+                    android:hint="Posicion Sur - Longitud"
+                    />
+
+                <TextView
+                    android:id="@+id/EditText_NumberCritico"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#3F51B5"
+                    android:textSize="18dp"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:textColor="#FBFBFB"
+                    android:text="Numero Critico"
+                    />
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
