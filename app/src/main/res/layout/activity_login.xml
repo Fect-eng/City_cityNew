@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0A708A"
+    android:backgroundTint="#0A708A"
     tools:context=".Login.Login_Activity">
 
     <include
@@ -51,15 +53,26 @@
 
             </io.github.florent37.shapeofview.shapes.ArcView>
 
+            <EditText
+                android:id="@+id/txtVisualizador1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:padding="12dp"
+                android:textAlignment="center"
+                android:textColor="#00FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="30dp"
-                android:padding="16dp"
+                android:layout_marginTop="16dp"
+                android:padding="12dp"
                 android:text="Cuenta de Usuario"
                 android:textAlignment="center"
-                android:textColor="#000000"
+                android:textColor="#FFFFFF"
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
@@ -67,7 +80,7 @@
                 android:id="@+id/txtVisualizador"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=".."
+                android:text="--"
                 android:padding="12dp"
                 android:textAlignment="center"
                 android:textColor="#100404"
@@ -86,7 +99,8 @@
                     android:id="@+id/IDT_CuentaUser"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Cuenta de Usuario"
+                    android:hint="DNI de Usuario"
+                    android:textColorHint="#000000"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:background="@drawable/edittext_custom"
                     app:layout_constraintStart_toStartOf="parent"
@@ -96,11 +110,13 @@
                         android:id="@+id/EDT_Cuenta1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="18sp"
                         android:background="@drawable/edittext_custom"
-                        android:inputType="textEmailAddress" />
+                        android:inputType="number"
+                        android:textColor="#000000"
+                        android:textSize="18sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
+
             </LinearLayout>
 
             <LinearLayout
@@ -115,8 +131,9 @@
                     android:id="@+id/EDT_PasswordUser"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Contraseña"
+                    android:hint="Contraseña de Usuario"
                     app:layout_constraintEnd_toEndOf="parent"
+                    android:textColorHint="#000000"
                     android:background="@drawable/edittext_custom"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
@@ -127,7 +144,8 @@
                         android:layout_height="wrap_content"
                         android:textSize="18sp"
                         android:background="@drawable/edittext_custom"
-                        android:inputType="textEmailAddress"
+                        android:textColor="#000000"
+                        android:inputType="textPassword"
                         />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -148,7 +166,7 @@
                     android:layout_gravity="end"
                     android:text="Registrarse"
                     android:textSize="18dp"
-                    android:textColor="#000000"
+                    android:textColor="#FFFFFF"
                     android:layout_marginRight="30dp"
                     />
             </LinearLayout>
@@ -161,7 +179,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/rounded_button"
-                android:backgroundTint="#3F51B6"
+                android:backgroundTint="#3143A6"
                 android:padding="8dp"
                 android:text="Ingresar !!!"
                 android:textSize="20dp"

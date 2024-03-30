@@ -197,6 +197,7 @@ public class ValidarGPS_Activity extends AppCompatActivity implements Navigation
                 if (isLocationInsideRegion()) {
                     showToast("Dentro del polígono");
                     startActivity(new Intent(ValidarGPS_Activity.this, BotonPanic_Activity.class));
+                    // revisar a nivel de diseño
                     finish();
                 } else {
                     showToast("Fuera del polígono");

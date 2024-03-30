@@ -21,7 +21,36 @@
         android:roundIcon="@mipmap/ic_launcher_mnpl_fnnn"
         android:supportsRtl="true"
         android:theme="@style/Theme.CiudadNuevaSegura"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".RecepcionDate_Activity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".Prb_EnvioDate_Activity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".PruebaID_Activity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".Registro.Login_Reg_Activity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <activity
             android:name=".Pruebas.Logueo_PRD_Activity"
             android:exported="false">

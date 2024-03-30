@@ -32,6 +32,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.sistemas.ciudadnuevasegura.Correo.Validacion_Code_Activity;
 import com.sistemas.ciudadnuevasegura.Fragments.ConsultaFragment;
 import com.sistemas.ciudadnuevasegura.GPS.BotonPanic_Activity;
+import com.sistemas.ciudadnuevasegura.MainActivity;
 import com.sistemas.ciudadnuevasegura.Politicas.Politicas_Activity;
 import com.sistemas.ciudadnuevasegura.R;
 import android.content.DialogInterface;
@@ -47,9 +48,10 @@ public class Registro_Activity extends AppCompatActivity implements NavigationVi
     ActionBarDrawerToggle mDDrawerToggle;
 
     TextInputEditText Register_editText_Nombres;
-    TextInputEditText Register_editText_Apellidos;
+    TextInputEditText Register_DNI_Pasaporte;
     TextInputEditText Register_editText_Telefono;
-    TextInputEditText Register_editText_Apellidoss;
+    TextInputEditText Register_direccion;
+    TextInputEditText Register_editText_password;
     TextInputEditText Register_editText_Referencia;
     TextInputEditText Register_editText_CorreoE;
     private RequestQueue rq;
@@ -85,9 +87,10 @@ public class Registro_Activity extends AppCompatActivity implements NavigationVi
          * =========================================================================================
          */
         Register_editText_Nombres = findViewById(R.id.Register_editText_Nombres);
-        Register_editText_Apellidos = findViewById(R.id.Register_editText_Apellidos);
+        Register_DNI_Pasaporte = findViewById(R.id.Register_DNI_Pasaporte);
         Register_editText_Telefono = findViewById(R.id.Register_editText_Telefono);
-        Register_editText_Apellidoss = findViewById(R.id.Register_editText_Apellidoss);
+        Register_editText_password = findViewById(R.id.Register_editText_password);
+        Register_direccion = findViewById(R.id.Register_direccion);
         Register_editText_Referencia = findViewById(R.id.Register_editText_Referencia);
         Register_editText_CorreoE = findViewById(R.id.Register_editText_CorreoE);
         /**
@@ -118,13 +121,20 @@ public class Registro_Activity extends AppCompatActivity implements NavigationVi
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Configurar el AlertDialog
-        builder.setMessage("Este es un mensaje de ejemplo.")
+        builder.setMessage("Esta de acuerdo en Registrarse?")
                 .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
-                        Toast.makeText(Registro_Activity.this, "Ingreso Exitoso", Toast.LENGTH_SHORT).show();
-                        VolleyRegister_DataUSR("https://ciudad-nueva-segura.000webhostapp.com/API/registro_usuario.php");
 
+                        VolleyRegister_DataUSR("https://devcraftinglab.com/securitygps/API/registro.php");
+                       // VolleyRegister_DataUSR("http://192.168.18.31/Security_GPS/API/registro.php");
+
+                        //VolleyRegister_DataUSR("https://ciudad-nueva-segura.000webhostapp.com/API/registro.php");
+                        //http://localhost/Security_GPS/API/registro.php
+                       // Toast.makeText(Registro_Activity.this, "Ingreso Exitoso", Toast.LENGTH_SHORT).show();
+
+                        //https://ciudad-nueva-segura.000webhostapp.com/API/registro.php
+                        enviarAlPrincipio();
                         // Acciones a realizar al hacer clic en Aceptar
                         dialog.dismiss();
                     }
@@ -141,6 +151,12 @@ public class Registro_Activity extends AppCompatActivity implements NavigationVi
         alertDialog.show();
     }
 
+    private void enviarAlPrincipio() {
+        Intent intent = new Intent(Registro_Activity.this, MainActivity.class);
+        startActivity(intent); // Iniciar el siguiente Activity
+        finish();
+    }
+
     /**
      * =========================================================================================
      * =========================================================================================
@@ -149,36 +165,37 @@ public class Registro_Activity extends AppCompatActivity implements NavigationVi
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                // Toast.makeText(getApplicationContext(), "Se Ingreso Personal Nuevo...", Toast.LENGTH_SHORT).show();
+                // Descomentar la línea siguiente si deseas mostrar un mensaje de éxito
+                Toast.makeText(getApplicationContext(), "Se Ingreso Personal Nuevo...", Toast.LENGTH_SHORT).show();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                //se agrego
-                Toast.makeText(Registro_Activity.this, error.toString(), Toast.LENGTH_SHORT).show();
-                Toast.makeText(Registro_Activity.this, "Se Ocasiono un error Inesperado !!!", Toast.LENGTH_SHORT).show();
+                // Mostrar detalles del error
+                Toast.makeText(Registro_Activity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(Registro_Activity.this, "Se Ocasionó un error inesperado !!!", Toast.LENGTH_SHORT).show();
             }
-
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parametros=new HashMap<String, String>();
-                // parametros.put("usu_nombre",txt_BD_Nombres.getText().toString());
-                parametros.put("usuarios_wenco",Register_editText_Nombres.getText().toString());
-                parametros.put("password_wenco",Register_editText_Apellidos.getText().toString());
-                parametros.put("telefono",Register_editText_Telefono.getText().toString());
-                parametros.put("direccion_usr",Register_editText_Apellidoss.getText().toString());
-                parametros.put("referencia_usr",Register_editText_Referencia.getText().toString());
-                parametros.put("correo_eusr",Register_editText_CorreoE.getText().toString());
-                //parametros.put("critico_n", EditText_NumberCritico.getText().toString());
+                Map<String, String> parametros = new HashMap<>();
+                parametros.put("name", Register_editText_Nombres.getText().toString());
+                parametros.put("dni_usr", Register_DNI_Pasaporte.getText().toString());
+                parametros.put("phone", Register_editText_Telefono.getText().toString());
+                parametros.put("address", Register_direccion.getText().toString());
+                parametros.put("reference", Register_editText_Referencia.getText().toString());
+                parametros.put("password", Register_editText_password.getText().toString());
+                parametros.put("email", Register_editText_CorreoE.getText().toString());
+
                 return parametros;
-                //hay que modificar para que enlace a la tabla usuario
             }
         };
-        RequestQueue requestQueue= Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
 
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
     }
+
+
     /**
      * =========================================================================================
      * =========================================================================================

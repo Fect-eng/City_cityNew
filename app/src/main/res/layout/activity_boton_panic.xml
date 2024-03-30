@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     tools:context=".GPS.BotonPanic_Activity">
 
     <include
@@ -96,7 +97,7 @@
                 android:hint="Posicion Sur - Longitud"
                 />
 
-            <TextView
+            <EditText
                 android:id="@+id/EditText_NumberCritico"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,9 +105,8 @@
                 android:textSize="18dp"
                 android:textAlignment="center"
                 android:padding="5dp"
-
                 android:textColor="#FBFBFB"
-                android:text="Numero Critico"
+                android:text="0"
                 />
 
         </LinearLayout>

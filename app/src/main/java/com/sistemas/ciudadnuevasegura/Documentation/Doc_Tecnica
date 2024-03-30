@@ -28,12 +28,33 @@ android:visibility="gone"
  * =================================================================================================
  */
 
+ # Inicializar un nuevo repositorio Git
  git init
- git init add -A
+
+ # Añadir todos los archivos al área de preparación
+ git add -A
+
+ # Verificar el estado de los archivos
  git status
+
+ # Realizar un commit con un mensaje
  git commit -m "version 1"
+
+ # Agregar un remoto llamado 'origin' con la URL de tu repositorio en GitHub
  git remote add origin https://github.com/Fect-eng/web_geoApp.git
- git push origin master
+
+ # Empujar (push) tus cambios al repositorio en GitHub, en la rama 'master'
+ git push -u origin master
+
 
 
  new update
+ // URL con desarrollo
+ https://ciudad-nueva-segura.000webhostapp.com/ajax/gpsonline.ajax.php
+
+ http://localhost/Security_GPS/
+ Ruta Localhost.
+
+ Nuevox es el que compraste..
+
+ https://devcraftinglab.com/securitygps/inicio

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#6552A62E"
     tools:context=".Registro.Registro_Activity">
 
     <include
@@ -52,7 +53,7 @@
                     app:startIconDrawable="@drawable/ic_baseline_face_6_24"
                     android:layout_marginTop="32dp"
                     android:layout_gravity="center"
-                    android:hint="Nombres Completos"
+                    android:hint="Nombres Completossss"
                     >
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -72,15 +73,15 @@
                     app:startIconDrawable="@drawable/ic_baseline_face_3_24_women"
                     android:layout_marginTop="10dp"
                     android:layout_gravity="center"
-                    android:hint="Apellidos Completos"
+                    android:hint="DNI / PASAPORTE"
                     >
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/Register_editText_Apellidos"
+                        android:id="@+id/Register_DNI_Pasaporte"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="#000000"
-                        android:inputType="text"
+                        android:inputType="phone"
                         />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -119,7 +120,7 @@
                     >
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/Register_editText_Apellidoss"
+                        android:id="@+id/Register_direccion"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="#000000"
@@ -140,6 +141,26 @@
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/Register_editText_Referencia"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#000000"
+                        android:inputType="text"
+                        />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="330dp"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:startIconDrawable="@drawable/ic_baseline_place_24"
+                    android:layout_marginTop="10dp"
+                    android:layout_gravity="center"
+                    android:hint="Contraseña de Usuario"
+                    >
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/Register_editText_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="#000000"

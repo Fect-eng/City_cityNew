@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -79,8 +80,8 @@ public class BotonPanic_Activity extends AppCompatActivity implements Navigation
     private Handler handler;
     EditText EditTextLatitud;
     EditText EditTextLongitud;
-    TextView EditText_NumberCritico;
 
+    EditText EditText_NumberCritico;
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
@@ -100,19 +101,58 @@ public class BotonPanic_Activity extends AppCompatActivity implements Navigation
         super.onCreate(savedInstanceState);
         setContentView(R.layout.include_emergencia);     // activity_boton_panic
 
+        // Establecer el texto recibido en el TextView
+
+        //MetodoRecuperar();
+
+        /**
+         * ========================================================================================
+         * CABECERA
+         * ========================================================================================
+         */
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setBackgroundColor(Color.parseColor("#0A708A")); //Color de Toolbar diferente
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF")); //Color de Texto Blanco
-        getSupportActionBar().setTitle("Ubicacion Emergencia");
+        getSupportActionBar().setTitle("Ubicacion Emergenciaaa");
+
+        /**
+         * ========================================================================================
+         * FIN DE CABECERA
+         * ========================================================================================
+         */
 
         EditTextLatitud = findViewById(R.id.EditTextLatitud);
         EditTextLongitud = findViewById(R.id.EditTextLongitud);
+
+
+        /**
+         * ========================================================================================
+         * // Recuperar el texto de SharedPreferences
+         *         SharedPreferences sharedPreferences = getSharedPreferences("my_shared_preferencesss", Context.MODE_PRIVATE);
+         *         String receivedText = sharedPreferences.getString("text1", "");
+         *
+         *         EditText_NumberCritico.setText(receivedText);
+         * ========================================================================================
+         */
         EditText_NumberCritico = findViewById(R.id.EditText_NumberCritico);
+
+        // Obtener la información de SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("my_shared_preferencess", Context.MODE_PRIVATE);
+        String receivedInfo = sharedPreferences.getString("info", "");
+
+        // Establecer la información recibida en el EditText
+        EditText_NumberCritico.setText(receivedInfo);
+
+        /**
+         * ========================================================================================
+         * ========================================================================================
+         */
+
         handler = new Handler();
         gpsCheckHandler = new Handler();
         gpsCheckHandler.postDelayed(gpsCheckRunnable, GPS_CHECK_INTERVAL);
-
 
         mmDrawerLayout = findViewById(R.id.drawer_layoutt_transs);     // cambiar variable
         mDDrawerToggle = new ActionBarDrawerToggle(this, mmDrawerLayout,toolbar , R.string.open, R.string.close);
@@ -129,8 +169,13 @@ public class BotonPanic_Activity extends AppCompatActivity implements Navigation
         ImageBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                //Metodo_Agregar("https://ciudad-nueva-segura.000webhostapp.com/API/data_in.php");     // falta revisar
+
+                // https://devcraftinglab.com/securitygps/API/coordenadas.php
+                Metodo_Agregar("https://devcraftinglab.com/securitygps/API/coordenadas.php");
+               // Metodo_Agregar("http://192.168.18.31/Security_GPS/API/coordenadas.php");
                 Toast.makeText(BotonPanic_Activity.this, "Auxilio Enviado, le ayudaremos", Toast.LENGTH_SHORT).show();
-                Metodo_Agregar("https://ciudad-nueva-segura.000webhostapp.com/API/data_in.php");     // falta revisar
             }
         });
 
@@ -170,10 +215,15 @@ public class BotonPanic_Activity extends AppCompatActivity implements Navigation
 
         checkAndRequestLocationPermission();
         //checkLoginButtonState();
+
+        // ========================================================================
+
+
         /**
-         *  FInal Codigo GPS
+         *  FInal Codigo GPS - Final OnCreate
          */
     }
+
 
     private Runnable gpsCheckRunnable = new Runnable() {
         @Override
@@ -223,10 +273,12 @@ public class BotonPanic_Activity extends AppCompatActivity implements Navigation
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
+                // TODO: 12/03/2024 revisar este codigo ya que no envia me parece que hay que integrar el id_user
                 Map<String, String> parametros=new HashMap<String, String>();
                // parametros.put("usu_nombre",txt_BD_Nombres.getText().toString());
-                parametros.put("latitud_usr",EditTextLatitud.getText().toString());
-                parametros.put("longitud_usr",EditTextLongitud.getText().toString());
+                parametros.put("latitud",EditTextLatitud.getText().toString());
+                parametros.put("longitud",EditTextLongitud.getText().toString());
+                parametros.put("id_user",EditText_NumberCritico.getText().toString());
                 //parametros.put("critico_n", EditText_NumberCritico.getText().toString());
                 return parametros;
                 //hay que modificar para que enlace a la tabla usuario

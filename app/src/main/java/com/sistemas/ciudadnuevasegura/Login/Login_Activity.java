@@ -15,10 +15,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +40,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.navigation.NavigationView;
 import com.sistemas.ciudadnuevasegura.Fragments.ConsultaFragment;
+import com.sistemas.ciudadnuevasegura.MainActivity;
+import com.sistemas.ciudadnuevasegura.PruebaID_Activity;
 import com.sistemas.ciudadnuevasegura.R;
 import com.sistemas.ciudadnuevasegura.Registro.Registro_Activity;
 import com.sistemas.ciudadnuevasegura.GPS.ValidarGPS_Activity;
@@ -44,17 +50,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Login_Activity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
-    Button buttonLogin;
     TextView TXT_registrar;
     Toolbar toolbar;
+
     private EditText EDT_Cuenta1;
     private EditText EDT_Password1;
-    TextView txtVisualizador;
+    Button buttonLogin;
+    private String textToSend1;
+
+    private TextView txtVisualizador;    // ver data exportada
+    private EditText txtVisualizador1;  // TODO: 27/03/2024 se realizo cambio antes era TextView
     private RequestQueue rq;
     RequestQueue requestQueue;
     private SharedPreferences sharedPreferences;
@@ -102,39 +117,88 @@ public class Login_Activity extends AppCompatActivity implements NavigationView.
 
         EDT_Cuenta1 = findViewById(R.id.EDT_Cuenta1);
         EDT_Password1 = findViewById(R.id.EDT_Password1);
+
         /**
-         * // TODO: 14/11/2023
+         * ========================================================================================
+         *
+         * ========================================================================================
+         */
+        txtVisualizador = findViewById(R.id.txtVisualizador);
+        txtVisualizador1 = findViewById(R.id.txtVisualizador1);
+        textToSend1 = txtVisualizador1.getText().toString();  // Variable para visualizar
+
+        txtVisualizador1.setEnabled(false);
+
+        /**
+         * ========================================================================================
+         *ESTABLECE LA INFORMACION DINAMICA EN EL EDTITTEXT  = txtVisualizador1
+         * ========================================================================================
+         */
+
+        String informacionDinamica = obtenerInformacionDinamica();
+        // Establecer el texto dinámico en el TextView
+        txtVisualizador1.setText(informacionDinamica);
+
+        /**
+         * ========================================================================================
+         *
+         * ========================================================================================
+         */
+
+
+        // Agregar un TextWatcher al textView1 para detectar cambios de texto
+        txtVisualizador.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No se necesita implementar
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Cuando el texto en textView1 cambia, actualiza textView2
+                txtVisualizador1.setText(s);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No se necesita implementar
+            }
+        });
+
+
+        /**
+         * // 
          */
         // Recuperar las credenciales guardadas (si existen)
         SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String savedUsername = sharedPreferences.getString(KEY_USERNAME, "");
         String savedPassword = sharedPreferences.getString(KEY_PASSWORD, "");
 
+        Metodo_EnviarData_activitys();
+
         // Mostrar las credenciales guardadas
         EDT_Cuenta1.setText(savedUsername);
         EDT_Password1.setText(savedPassword);
+
+        Metod_Autenticacion_viewID();
+       // Metodo_EnviarData_activitys();
 
         buttonLogin = findViewById(R.id.buttonLogin);
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                ejecutarMetodosConRetraso();
-                // Obtener las credenciales ingresadas
-                String username = EDT_Cuenta1.getText().toString();
-                String password = EDT_Password1.getText().toString();
+                // ejecutarMetodosConRetraso();   =================================================
 
-                if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(password)) {
-                    // Guardar las credenciales en SharedPreferences
-                    guardarCredenciales(username, password);
-                    Metodo_Login(); // TODO: 4/11/2023
-                   // mostrarMensaje("Inicio de sesión exitoso");
-                } else {
-                    mostrarMensaje("Por favor, ingrese las credenciales");
-                }
+                // TODO: 25/03/2024 Funcional
 
-               // Metodo_Login(); // TODO: 4/11/2023
-               // finish();
+                Metod_Autenticacion_viewID();           // Valida el ID de usuario - captura
+
+                Metod_EnvioLogin_Date();                // Validar acceso Login
+
+                MetodoPrueba_Edttxt();
+                //Metodo_EnviarData_activitys();
+                //Metodo_EnviarData_activitys();          // TODO: 25/03/2024  realizando desarrollo
             }
         });
 
@@ -148,23 +212,195 @@ public class Login_Activity extends AppCompatActivity implements NavigationView.
             }
         });
 
-
-        txtVisualizador = findViewById(R.id.txtVisualizador);
-
         //String url = "https://ciudad-nueva-segura.000webhostapp.com/API/login.php";
     }
+
+    private void MetodoPrueba_Edttxt() {
+        // TODO: 27/03/2024
+        // Obtener la información del EditText
+        String infoToSend = txtVisualizador1.getText().toString();
+
+        // Guardar la información en SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("my_shared_preferencess", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("info", infoToSend);
+        editor.apply();
+
+    }
+
+    private String obtenerInformacionDinamica() {
+        /**
+         * esto no mover lo que hace es copiar la informacion del TextView = txtVisualizador1
+         */
+        // Por ejemplo, aquí podrías obtener la información de una base de datos, de un servicio web, etc.
+        // En este ejemplo, simplemente retornaremos un string estático
+        return "Información Dinámica";
+    }
+
+    /**
+     * ============================================================================================
+     * MODIFICACION // TODO: 27/03/2024
+     * ============================================================================================
+     */
+    private void Metodo_EnviarData_activitys() {
+        // Guardar el texto en SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("my_shared_preferencesss", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("text1", textToSend1);
+        editor.apply();
+        // TODO: 26/03/2024  revisar 
+    }
+
+    /**
+     * ============================================================================================
+     * MODIFICACION // TODO: 27/03/2024
+     * ============================================================================================
+     */
+    private void Metod_Autenticacion_viewID() {
+        // TODO: 25/03/2024 === Se incorpora Metodo Volley para revisar mediante el ID - Password - el ID de la DataBase para autenticar el boton de panico es decir que lo identifique
+        Metodo_del_BotonID();
+    }
+
+    private void Metodo_del_BotonID() {
+        String value1 = EDT_Cuenta1.getText().toString();
+        String value2 = EDT_Password1.getText().toString();
+        new SendRequestTask().execute(value1, value2);
+    }
+
+    private class SendRequestTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            String value1 = params[0];
+            String value2 = params[1];
+            try {
+                URL url = new URL(buildUrlString(value1, value2));
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+                conn.disconnect();
+                return response.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String response) {
+            if (response != null) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    if (jsonObject.has("id")) {
+                        String id = jsonObject.getString("id");
+                        updateResponseTextView("" + id);     // ID:
+
+                    } else {
+                        showErrorMessage("Error: No se encontró 'id' en la respuesta JSON");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    showErrorMessage("Error: No se pudo analizar la respuesta JSON");
+                }
+            } else {
+                showErrorMessage("Error: No se recibió respuesta del servidor");
+            }
+        }
+    }
+
+    private String buildUrlString(String value1, String value2) {
+
+        //return "http://192.168.18.31/Security_GPS/API/query_data.php?dni_usr=" + value1 + "&password=" + value2;
+
+        return "https://devcraftinglab.com/securitygps/API/query_data.php?dni_usr=" + value1 + "&password=" + value2;
+
+    }
+
+    private void updateResponseTextView(String result) {
+        txtVisualizador.setText(result);   // Elemento que visualiza la data de la BD
+        // TODO: 25/03/2024
+    }
+
+    private void showErrorMessage(String message) {
+        Toast.makeText(Login_Activity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * ============================================================================================
+     * ============================================================================================
+     */
+    private void Metod_EnvioLogin_Date() {
+        // TODO: 25/03/2024 aca colocaremos toda la informacion tanto para guardar la informacion del ID de Usuario y luego Autenticael usuario
+        // Obtener las credenciales ingresadas
+        String username = EDT_Cuenta1.getText().toString();
+        String password = EDT_Password1.getText().toString();
+        guardarCredenciales(username, password);
+
+        // http://localhost/Security_GPS/API/login_android.php
+        // https://devcraftinglab.com/securitygps/API/login_android.php
+
+        Metodo_Boton_Login_Activity("https://devcraftinglab.com/securitygps/API/login_android.php");
+        // Metodo_Boton_Login_Activity("http://192.168.18.31/Security_GPS/API/login_android.php");
+    }
+
+    /**
+     * ============================================================================================
+     * ============================================================================================
+     */
+
+    private void Metodo_Boton_Login_Activity(String URL) {
+
+    // TODO: 22/03/2024 Funcional a nivel de Peticiones en Base de datos Local - lo pasaremos a produccion ---
+
+        StringRequest stringRequest=new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                if (!response.isEmpty()) {
+                    Intent intent = new Intent(getApplicationContext(), ValidarGPS_Activity.class);
+                    Toast.makeText(Login_Activity.this, "Bienvenido Al Sistema de Seguridad Ciudad Nueva!!", Toast.LENGTH_SHORT).show();
+                    // Limpiar_TextView();
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(Login_Activity.this, "Usuario o contraseña incorrecta, vuelva a intentar", Toast.LENGTH_SHORT).show();
+                    //  Limpiar_TextView();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(Login_Activity.this, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> parametross=new HashMap<String,String>();
+                parametross.put("dni_usr",EDT_Cuenta1.getText().toString());        //validado
+                parametross.put("password",EDT_Password1.getText().toString());     //validado
+                return  parametross;
+            }
+
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+    }
+
 
     private void ejecutarMetodosConRetraso() {
         // Ejecuta el primer método inmediatamente directo desde la API
         //falta cambiar
         // http://localhost/Ciudad_Nueva/API/selct_name.php?usuarios_wenco=admin
-        BuscarUser_Representar("https://ciudad-nueva-segura.000webhostapp.com/API/selct_name.php?usuarios_wenco=" + EDT_Cuenta1.getText());
+        //http://localhost/Security_GPS/API/selct_name.php?name=
+        BuscarUser_Representar("http://192.168.18.31/Security_GPS/API/selct_name.php?name" + EDT_Cuenta1.getText()); // esta mandando error
+        // funciona de manera local la URL
+        // BuscarUser_Representar("https://ciudad-nueva-segura.000webhostapp.com/API/selct_name.php?usuarios_wenco=" + EDT_Cuenta1.getText()); // esta mandando error
 
 
-    }
-
-
-    private void enviarData_next() {
     }
 
     private void BuscarUser_Representar(String URL) {
@@ -175,9 +411,9 @@ public class Login_Activity extends AppCompatActivity implements NavigationView.
                 for (int i = 0; i < response.length(); i++) {
                     try {
                         jsonObject = response.getJSONObject(i);
-                        EDT_Cuenta1.setText(jsonObject.getString("usuarios_wenco"));
-                        txtVisualizador.setText(jsonObject.getString("telefono"));
-                      //  CopiarInformacion();
+                        // EDT_Cuenta1.setText(jsonObject.getString("name"));
+                        txtVisualizador.setText(jsonObject.getString("name"));
+                        //  CopiarInformacion();
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -186,12 +422,15 @@ public class Login_Activity extends AppCompatActivity implements NavigationView.
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error de conexionnnnn", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Error de conexion", Toast.LENGTH_SHORT).show();
             }
         });
         requestQueue=Volley.newRequestQueue(this);
         requestQueue.add(jsonArrayRequest);
     }
+
+
+    // ????????????????????????????????????????????????????????????????????????????????????????????????????????????
 
     private void guardarCredenciales(String username, String password) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -206,76 +445,7 @@ public class Login_Activity extends AppCompatActivity implements NavigationView.
     }
 
     //  String url = "http://192.168.0.10/Ciudad_Nueva/API/login.php";
-    private void Metodo_Login() {
-        /**
-         * Colocar metodo de login con volley
-         */
-        String usuarios_wenco = EDT_Cuenta1.getText().toString();
-        String password_wenco = EDT_Password1.getText().toString();
 
-        String url = "https://ciudad-nueva-segura.000webhostapp.com/API/login.php";
-
-        // Crear la solicitud POST con Volley
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        interpretarRespuesta(response);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mostrarMensaje("Error en la conexión al servidor.");
-                    }
-                }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                // Parámetros para la solicitud POST
-                Map<String, String> params = new HashMap<>();
-                params.put("usuarios_wenco", usuarios_wenco);
-                params.put("password_wenco", password_wenco);
-                return params;
-            }
-        };
-
-        // Agregar la solicitud a la cola de solicitudes de Volley
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
-    } // FIn de metodo Login
-
-    private void interpretarRespuesta(String response) {
-        try {
-            JSONObject jsonObject = new JSONObject(response);
-            boolean success = jsonObject.optBoolean("success", false);
-            String message = jsonObject.optString("message", "Respuesta inválida del servidor.");
-
-            if (success) {
-                // Inicio de sesión exitoso
-                mostrarMensaje("Inicio de sesión exitoso.");
-                // Redirigir a SecondActivity
-
-                Intent intent = new Intent(Login_Activity.this, ValidarGPS_Activity.class);
-                startActivity(intent);
-                finish(); // Opcional: Finalizar MainActivity para que no pueda volver atrás con el botón "Atrás"
-            } else {
-                // Inicio de sesión fallido
-                mostrarMensaje("Inicio de sesión fallido. " + message);
-                // Aquí puedes realizar alguna acción después de un inicio de sesión fallido
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-            mostrarMensaje("Error en el formato de la respuesta del servidor.");
-        }
-    }
-
-    private void mostrarMensaje(String mensaje) {
-        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
-    }
-
-    /**
-     *
-     */
 
     @Override
     protected void onResume() {
@@ -300,22 +470,22 @@ public class Login_Activity extends AppCompatActivity implements NavigationView.
     };
 
     private void showGpsDialog() {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("El GPS está desactivado. ¿Desea activarlo?")
-                    .setCancelable(false)
-                    .setPositiveButton("Activar GPS", new DialogInterface.OnClickListener() {
-                        public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                        public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            dialog.cancel();
-                        }
-                    });
-            final AlertDialog alert = builder.create();
-            alert.show();
-        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("El GPS está desactivado. ¿Desea activarlo?")
+                .setCancelable(false)
+                .setPositiveButton("Activar GPS", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
 
 
     private boolean isGpsEnabled() {
